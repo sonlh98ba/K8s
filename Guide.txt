@@ -64,7 +64,7 @@ nano playbook.yaml
     - geerlingguy.containerd 
     - geerlingguy.kubernetes 
 
-ansible-playbook -i hosts playbook.yml
+ansible-playbook -i hosts playbook.yaml
 
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all  --apiserver-advertise-address=10.0.0.4
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml

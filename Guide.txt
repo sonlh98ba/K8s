@@ -9,8 +9,8 @@ mkdir k8s
 nano hosts
 
 [all]
-172.16.143.164 kubernetes_role="master"  ansible_user=ubuntu
-172.16.143.163 kubernetes_role="node"  ansible_user=ubuntu
+10.0.0.4 kubernetes_role="master"  ansible_user=ubuntu
+10.0.0.5 kubernetes_role="node"  ansible_user=ubuntu
 
 ansible-galaxy install geerlingguy.containerd
 ansible-galaxy install geerlingguy.kubernetes

@@ -1,3 +1,5 @@
+-- Remember open networking policy if want to connect to internet
+
 Generate ssh-key from ansible host to all machine:
 
 ssh-keygen -t rsa -b 4096

@@ -1,0 +1,37 @@
+-- Set up alias
+alias k=kubectl
+
+-- Create Configmap
+
+nano mysqlconn.yaml
+
+----------------------
+apiVersion: v1
+kind: Configmap
+metadata:
+  name: mysql-connection
+data:
+  DB_HOST: 127.0.0.1
+  DB_NAME: mariadb
+----------------------
+
+k apply -f mysqlconn.yaml
+k get configmap
+k describe configmap mysql-connection
+
+-- Create Secret
+
+nano secretpass.yaml
+
+----------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+data:
+  DB_USER: cm9vda==
+  DB_PASS: MTIzNDU2
+----------------------
+k apply -f secretpass.yaml
+k get secret
+k describe secret mysql-secret

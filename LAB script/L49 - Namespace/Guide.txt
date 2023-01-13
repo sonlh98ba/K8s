@@ -1,0 +1,141 @@
+-- Set up alias
+alias k=kubectl
+
+-- Create namespace
+k create ns project1
+k get ns
+
+-- Create yaml file to create pod
+nano pod.yaml
+
+----------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: podapp1
+  labels:
+    name: podapp1
+spec:
+  containers:
+  - name: nginxpod1
+    image: nginx
+----------------------
+
+-- Apply yaml file
+k apply -f pod.yaml
+k apply -f pod.yaml --namespace=project1
+
+-- Check pod created
+k get pod -o wide -A
+
+-- Check service in each namespace
+k get svc -n default
+k get svc -n project1
+
+nano podpy.yaml
+
+----------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python2
+  namespace: project2
+  labels:
+    name: podapp2
+spec:
+  containers:
+  - name: python2
+    image: nginx
+----------------------
+
+k apply -f podpy.yaml -- failed because namespace project2 is not exist
+k create ns project2 -- create namespace and retry before command
+
+
+-- Create service use selector to find the Pod by label and add to it's Endpoint
+nano svcproject1.yaml
+
+----------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: svcproject1
+  namespace: project1
+spec:
+  selector:
+   name: podapp1
+  type: ClusterIP
+  ports:
+  - name: port1
+    port: 80
+    targetPort: 80
+----------------------
+
+-- Create service
+k apply -f svcproject1.yaml
+
+-- Check
+k get svc -n project1
+
+-- Check curl
+curl http://<Svc ClusterIP>
+
+-- Create pod installed curl and nslookup
+k run svccurl --image=radial/busyboxplus:curl -i --tty
+
+-- From this pod
+curl http://svcproject1
+nslookup svcproject1
+-- Then exit
+
+-- Check Endpoint of service
+k get endpoints -A
+k describe svc svcproject1 -n project1
+k get pod -n project1 -o wide
+
+-- Create svcproject1 dont have selector and create Endpoint route to pod in another namespace
+nano svcproject2.yaml
+
+----------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: svcproject2
+  namespace: project1
+spec:
+  type: NodePort
+  ports:
+  - name: port1
+    port: 80
+    nodePort: 31081
+----------------------
+
+k apply -f svcproject2.yaml
+
+-- Check Endpoint 
+k describe svc svcproject2 -n project1 -- Endpoint is none
+
+-- Check IP of pod in namespace project2
+k get pod -o wide -n project2
+
+-- Create Endpoint route to pod IP in project2
+nano svcendpoint.yaml
+
+----------------------
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: svcproject2
+  namespace: project1
+subsets:
+  - addresses:
+    - ip: 10.244.1.4
+    ports:
+      - name: port1
+        port: 80
+----------------------
+
+k apply -f svcendpoint.yaml
+
+-- Recheck Endpoint 
+k describe svc svcproject2 -n project1 -- Endpoint is not null :)
